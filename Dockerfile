@@ -12,4 +12,4 @@ ENV JDBC_DATABASE_USERNAME ${JDBC_DATABASE_USERNAME}
 WORKDIR /app
 COPY ./build/libs/auth-0.0.1-SNAPSHOT.jar /app
 EXPOSE 8080
-CMD ["java","-jar","<app_name>-<app_version>.jar"]
+CMD ["java","-jar","auth-0.0.1-SNAPSHOT.jar"]
