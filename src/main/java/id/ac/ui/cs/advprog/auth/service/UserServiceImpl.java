@@ -16,24 +16,31 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User create(User user) {
-        return null;
+        userRepository.createUser(user);
+        return user;
     }
 
     @Override
     public List<User> findAll() {
-        return null;
+        Iterator<User> userIterator = userRepository.findAll();
+        List<User> allUser = new ArrayList<>();
+        userIterator.forEachRemaining(allUser::add);
+        return allUser;
     }
 
     @Override
     public User findById(String id) {
-        return null;
+        User user = userRepository.findById(id);
+        return user;
     }
 
     @Override
     public void update(String userId, User user) {
+        userRepository.update(userId, user);
     }
 
     @Override
     public void deleteUserById(String userId) {
+        userRepository.deleteUserById(userId);
     }
 }
