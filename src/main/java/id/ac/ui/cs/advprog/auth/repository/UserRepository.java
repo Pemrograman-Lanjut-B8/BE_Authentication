@@ -21,21 +21,44 @@ public class UserRepository {
     private UserBuilder userBuilder;
 
     public User createUser(User user){
-        return null;
+        if (user.getId() == null) {
+            UUID uuid = UUID.randomUUID();
+            user.setId(uuid.toString());
+        }
+        userData.add(user);
+        return user;
     }
     public Iterator<User> findAll(){
-        return null;
+        return userData.iterator();
     }
     public User findById(String id){
+        for (User User: userData){
+            if (User.getId().equals(id)){
+                return User;
+            }
+        }
         return null;
     }
 
     public User update(String id, User updatedUser){
+        for (int i=0; i<userData.size(); i++){
+            User user = userData.get(i);
+            if(user.getId().equals(id)){
+                User newUser = userBuilder.reset()
+                        .setCurrent(updatedUser)
+                        .addId(id)
+                        .addPassword(updatedUser.getPassword())
+                        .build();
+                userData.remove(i);
+                userData.add(i,newUser);
+                return newUser;
+            }
+        }
         return null;
     }
 
     public void deleteUserById(String id){
-
+        userData.removeIf(User -> User.getId().equals(id));
     }
 
 }
