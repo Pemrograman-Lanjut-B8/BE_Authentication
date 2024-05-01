@@ -1,7 +1,6 @@
 package id.ac.ui.cs.advprog.auth.model.builder;
 
-import id.ac.ui.cs.advprog.auth.model.User;
-import id.ac.ui.cs.advprog.auth.model.builder.UserBuilder;
+import id.ac.ui.cs.advprog.auth.model.UserEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -18,34 +17,13 @@ public class UserBuilderTest {
 
     @Test
     void testBuildUser() {
-        User user = new UserBuilder()
-                .addId("1")
-                .addFullName("John Doe")
-                .addEmail("john@example.com")
-                .addPhoneNumber("1234567890")
+        UserEntity user = new UserBuilder()
+                .addUsername("John Doe")
                 .addPassword("password123")
-                .addType("CUSTOMER")
                 .build();
 
-        assertEquals("1", user.getId());
-        assertEquals("John Doe", user.getFullName());
-        assertEquals("john@example.com", user.getEmail());
-        assertEquals("1234567890", user.getPhoneNumber());
+        assertEquals("John Doe", user.getUsername());
         assertEquals("password123", user.getPassword());
-        assertEquals("CUSTOMER", user.getType());
     }
 
-    @Test
-    void testBuildUserWithInvalidType() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            new UserBuilder()
-                    .addId("1")
-                    .addFullName("John Doe")
-                    .addEmail("john@example.com")
-                    .addPhoneNumber("1234567890")
-                    .addPassword("password123")
-                    .addType("INVALID_TYPE")
-                    .build();
-        });
-    }
 }

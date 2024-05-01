@@ -1,7 +1,7 @@
 package id.ac.ui.cs.advprog.auth.repository;
 
 import id.ac.ui.cs.advprog.auth.model.builder.UserBuilder;
-import id.ac.ui.cs.advprog.auth.model.User;
+import id.ac.ui.cs.advprog.auth.model.UserEntity;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -14,39 +14,35 @@ import java.util.UUID;
 
 @Repository
 public class UserRepository {
-    private final List<User> userData = new ArrayList<>();
+    private final List<UserEntity> userData = new ArrayList<>();
 
     @Setter
     @Autowired
     private UserBuilder userBuilder;
 
-    public User createUser(User user){
-        if (user.getId() == null) {
-            UUID uuid = UUID.randomUUID();
-            user.setId(uuid.toString());
-        }
+    public UserEntity createUser(UserEntity user){
         userData.add(user);
         return user;
     }
-    public Iterator<User> findAll(){
+    public Iterator<UserEntity> findAll(){
         return userData.iterator();
     }
-    public User findById(String id){
-        for (User User: userData){
-            if (User.getId().equals(id)){
+    public UserEntity findByUsername(String username){
+        for (UserEntity User: userData){
+            if (User.getUsername().equals(username)){
                 return User;
             }
         }
         return null;
     }
 
-    public User update(String id, User updatedUser){
+    public UserEntity update(String username, UserEntity updatedUser){
         for (int i=0; i<userData.size(); i++){
-            User user = userData.get(i);
-            if(user.getId().equals(id)){
-                User newUser = userBuilder.reset()
+            UserEntity user = userData.get(i);
+            if(user.getUsername().equals(username)){
+                UserEntity newUser = userBuilder.reset()
                         .setCurrent(updatedUser)
-                        .addId(id)
+                        .addUsername(updatedUser.getUsername())
                         .addPassword(updatedUser.getPassword())
                         .build();
                 userData.remove(i);
@@ -55,10 +51,6 @@ public class UserRepository {
             }
         }
         return null;
-    }
-
-    public void deleteUserById(String id){
-        userData.removeIf(User -> User.getId().equals(id));
     }
 
 }

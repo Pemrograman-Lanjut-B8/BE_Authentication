@@ -1,12 +1,11 @@
 package id.ac.ui.cs.advprog.auth.service;
 
-import id.ac.ui.cs.advprog.auth.model.User;
+import id.ac.ui.cs.advprog.auth.model.UserEntity;
 import id.ac.ui.cs.advprog.auth.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -15,32 +14,32 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public User create(User user) {
+    public UserEntity create(UserEntity user) {
         userRepository.createUser(user);
         return user;
     }
 
     @Override
-    public List<User> findAll() {
-        Iterator<User> userIterator = userRepository.findAll();
-        List<User> allUser = new ArrayList<>();
+    public List<UserEntity> findAll() {
+        Iterator<UserEntity> userIterator = userRepository.findAll();
+        List<UserEntity> allUser = new ArrayList<>();
         userIterator.forEachRemaining(allUser::add);
         return allUser;
     }
 
     @Override
-    public User findById(String id) {
-        User user = userRepository.findById(id);
+    public UserEntity findByUsername(String id) {
+        UserEntity user = userRepository.findByUsername(id);
         return user;
     }
 
     @Override
-    public void update(String userId, User user) {
+    public void update(String userId, UserEntity user) {
         userRepository.update(userId, user);
     }
 
-    @Override
-    public void deleteUserById(String userId) {
-        userRepository.deleteUserById(userId);
-    }
+//    @Override
+//    public void deleteUserBy(String userId) {
+//        userRepository.deleteUserById(userId);
+//    }
 }
