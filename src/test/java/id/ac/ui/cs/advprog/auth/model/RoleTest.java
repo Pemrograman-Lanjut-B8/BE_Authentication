@@ -1,27 +1,27 @@
 package id.ac.ui.cs.advprog.auth.model;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.junit.jupiter.MockitoExtension;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@ExtendWith(MockitoExtension.class)
 public class RoleTest {
-
-    @InjectMocks
-    private Role role;
 
     @Test
     public void testGetId() {
-        role.setId(1);
-        assertEquals(1, role.getId());
+        Role role = new Role(ERole.ROLE_USER);
+        role.setId(1L);
+        assertEquals(1L, role.getId());
     }
 
     @Test
     public void testGetName() {
-        role.setName("USER");
-        assertEquals("USER", role.getName());
+        Role role = new Role(ERole.ROLE_USER);
+        assertEquals(ERole.ROLE_USER, role.getName());
+    }
+
+    @Test
+    public void testSetName() {
+        Role role = new Role();
+        role.setName(ERole.ROLE_ADMIN);
+        assertEquals(ERole.ROLE_ADMIN, role.getName());
     }
 }

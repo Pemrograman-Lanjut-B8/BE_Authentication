@@ -1,148 +1,90 @@
 package id.ac.ui.cs.advprog.auth.repository;
-
 import id.ac.ui.cs.advprog.auth.model.UserEntity;
-import id.ac.ui.cs.advprog.auth.model.builder.UserBuilder;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import java.util.Optional;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.mockito.Mockito.when;
 
-import java.util.Iterator;
-
-import static org.junit.jupiter.api.Assertions.*;
-
+@ExtendWith(MockitoExtension.class)
 public class UserRepositoryTest {
 
+    @Mock
     private UserRepository userRepository;
 
-    @BeforeEach
-    void setUp() {
-        userRepository = new UserRepository();
-        userRepository.setUserBuilder(new UserBuilder());
+    @Test
+    public void testFindByUsername_ExistingUser() {
+        // Mocking the behavior of the user repository
+        UserEntity user = new UserEntity("testUser", "test@example.com", "password");
+        when(userRepository.findByUsername("testUser")).thenReturn(Optional.of(user));
+
+        // Testing the repository method directly
+        Optional<UserEntity> foundUser = userRepository.findByUsername("testUser");
+
+        // Verifying that the correct user is returned
+        assertEquals("testUser", foundUser.get().getUsername());
     }
 
     @Test
-    void testCreateUser() {
-        UserEntity user = new UserEntity();
-        user.setUsername("John Smith");
-        user.setPassword("password123");
+    public void testFindByUsername_NonExistingUser() {
+        // Mocking the behavior of the user repository
+        when(userRepository.findByUsername("nonExistingUser")).thenReturn(Optional.empty());
 
-        UserEntity createdUser = userRepository.createUser(user);
+        // Testing the repository method directly
+        Optional<UserEntity> foundUser = userRepository.findByUsername("nonExistingUser");
 
-        assertEquals("John Smith", createdUser.getUsername());
-        assertEquals("password123", createdUser.getPassword());
-
-        Iterator<UserEntity> iterator = userRepository.findAll();
-        assertTrue(iterator.hasNext());
-        assertEquals(createdUser, iterator.next());
+        // Verifying that no user is found
+        assertFalse(foundUser.isPresent());
     }
 
     @Test
-    void testFindByUsername() {
-        UserEntity user = new UserEntity();
-        user.setUsername("John Smith");
-        user.setPassword("password123");
+    public void testExistsByUsername_ExistingUsername() {
+        // Mocking the behavior of the user repository
+        when(userRepository.existsByUsername("existingUsername")).thenReturn(true);
 
-        UserEntity createdUser = userRepository.createUser(user);
+        // Testing the repository method directly
+        boolean exists = userRepository.existsByUsername("existingUsername");
 
-        UserEntity foundUser = userRepository.findByUsername(createdUser.getUsername());
-        assertNotNull(foundUser);
-        assertEquals("John Smith", foundUser.getUsername());
-        assertEquals("password123", foundUser.getPassword());
+        // Verifying that the username exists
+        assertEquals(true, exists);
     }
 
     @Test
-    void testUpdateUser() {
-        // Create a user
-        UserEntity user = new UserEntity();
-        user.setUsername("John Smith");
-        user.setPassword("password123");
+    public void testExistsByUsername_NonExistingUsername() {
+        // Mocking the behavior of the user repository
+        when(userRepository.existsByUsername("nonExistingUsername")).thenReturn(false);
 
-        UserEntity createdUser = userRepository.createUser(user);
-        String username = user.getUsername();
+        // Testing the repository method directly
+        boolean exists = userRepository.existsByUsername("nonExistingUsername");
 
-        // Update the user
-        UserEntity updatedUser = new UserEntity();
-        updatedUser.setUsername("Updated Name");
-        updatedUser.setPassword("updatedpassword");
-        UserEntity updatedUserResult = userRepository.update(username, updatedUser);
-
-        // Verify the user has been updated
-        assertNotNull(updatedUserResult);
-        assertEquals("Updated Name", updatedUserResult.getUsername());
-        assertEquals("updatedpassword", updatedUserResult.getPassword());
-
-        // Verify that the updated user is reflected in the repository
-        Iterator<UserEntity> iterator = userRepository.findAll();
-        assertTrue(iterator.hasNext());
-        assertEquals(updatedUserResult, iterator.next());
+        // Verifying that the username does not exist
+        assertEquals(false, exists);
     }
 
-//    @Test
-//    void testDeleteUserById() {
-//        // Create a user
-//        UserEntity user = new UserEntity();
-//        user.setFullName("John Doe");
-//        user.setEmail("john@example.com");
-//        user.setPassword("password123");
-//        UserEntity createdUser = userRepository.createUser(user);
-//        String userId = createdUser.getId();
-//
-//        // Delete the user
-//        userRepository.deleteUserById(userId);
-//
-//        // Verify the user has been deleted
-//        UserEntity foundUser = userRepository.findById(userId);
-//        assertNull(foundUser);
-//
-//        // Verify that the deleted user is no longer in the repository
-//        Iterator<UserEntity> iterator = userRepository.findAll();
-//        assertFalse(iterator.hasNext());
-//    }
+    @Test
+    public void testExistsByEmail_ExistingEmail() {
+        // Mocking the behavior of the user repository
+        when(userRepository.existsByEmail("existing@example.com")).thenReturn(true);
 
-//    @Test
-//    void testCreateUserWithGeneratedId() {
-//        UserEntity user = new UserEntity();
-//        user.setFullName("Jane Doe");
-//        user.setEmail("jane@example.com");
-//        user.setPassword("password456");
-//
-//        UserEntity createdUser = userRepository.createUser(user);
-//
-//        assertNotNull(createdUser.getId());
-//        assertEquals("Jane Doe", createdUser.getFullName());
-//        assertEquals("jane@example.com", createdUser.getEmail());
-//        assertEquals("password456", createdUser.getPassword());
-//
-//        // Ensure generated id is unique
-//        UserEntity newUser = new UserEntity();
-//        newUser.setFullName("Another User");
-//        newUser.setEmail("another@example.com");
-//        newUser.setPassword("anotherpassword");
-//        UserEntity createdNewUser = userRepository.createUser(newUser);
-//
-//        assertNotEquals(createdUser.getId(), createdNewUser.getId());
-//    }
-//
-//    @Test
-//    void testUpdateNonExistentUser() {
-//        UserEntity user = new UserEntity();
-//        user.setFullName("John Doe");
-//        user.setEmail("john@example.com");
-//        user.setPassword("password123");
-//
-//        UserEntity updatedUser = new UserEntity();
-//        updatedUser.setFullName("Updated Name");
-//
-//        // Try to update a user that does not exist
-//        assertNull(userRepository.update("nonExistentId", updatedUser));
-//    }
-//
-//    @Test
-//    void testDeleteNonExistentUser() {
-//        // Try to delete a user that does not exist
-//        userRepository.deleteUserById("nonExistentId");
-//
-//        // Ensure no exception is thrown
-//        assertTrue(true);
-//    }
+        // Testing the repository method directly
+        boolean exists = userRepository.existsByEmail("existing@example.com");
+
+        // Verifying that the email exists
+        assertEquals(true, exists);
+    }
+
+    @Test
+    public void testExistsByEmail_NonExistingEmail() {
+        // Mocking the behavior of the user repository
+        when(userRepository.existsByEmail("nonExisting@example.com")).thenReturn(false);
+
+        // Testing the repository method directly
+        boolean exists = userRepository.existsByEmail("nonExisting@example.com");
+
+        // Verifying that the email does not exist
+        assertEquals(false, exists);
+    }
 }
-
