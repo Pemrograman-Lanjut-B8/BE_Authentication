@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.auth.security;
 
+import id.ac.ui.cs.advprog.auth.service.*;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,14 +22,16 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
     @Autowired
     private UserDetailsService customUserDetailsService;
 
-
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        String token = getJWTFromRequest(request);
-        System.out.println("jwtauthfilter.doFilterInternal "+token);
-        if(StringUtils.hasText(token) && tokenGenerator.validateToken(token)) {
+
+        CustomFilterChain customFilterChain = setUpFilterChain();
+        customFilterChain.doFilter(request, response);
+
+        if(response.getStatus() != HttpServletResponse.SC_UNAUTHORIZED) {
+            String token = getJWTFromRequest(request);
             String username = tokenGenerator.getUsernameFromJWT(token);
 
             UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
@@ -37,15 +40,25 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
             authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
         }
+
         filterChain.doFilter(request, response);
     }
 
     private String getJWTFromRequest(HttpServletRequest request) {
-        System.out.println(request.getHeader("Authorization"));
         String bearerToken = request.getHeader("Authorization");
         if(StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7, bearerToken.length());
         }
         return null;
+    }
+
+    private CustomFilterChain setUpFilterChain() {
+        HeaderFilter firstHandler = new HeaderFilter();
+        CredentialFilter secondHandler = new CredentialFilter();
+        ValidateTokenFilter thirdHandler = new ValidateTokenFilter();
+        firstHandler.setNextFilter(secondHandler);
+        secondHandler.setNextFilter(thirdHandler);
+        thirdHandler.setTokenGenerator(tokenGenerator);
+        return firstHandler;
     }
 }
