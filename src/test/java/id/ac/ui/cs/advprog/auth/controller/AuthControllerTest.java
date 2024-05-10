@@ -24,6 +24,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Collections;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
@@ -53,7 +54,7 @@ public class AuthControllerTest {
     public void testLogin_Success() {
         // Mock Authentication
         Authentication authentication = mock(Authentication.class);
-        when(authentication.getPrincipal()).thenReturn(new UserDetailsImpl(1L, "username", "email", "password", Collections.emptyList()));
+        when(authentication.getPrincipal()).thenReturn(new UserDetailsImpl(UUID.randomUUID(), "username", "email", "password", Collections.emptyList()));
         when(authenticationManager.authenticate(any())).thenReturn(authentication);
 
         // Mock JWT Token generation

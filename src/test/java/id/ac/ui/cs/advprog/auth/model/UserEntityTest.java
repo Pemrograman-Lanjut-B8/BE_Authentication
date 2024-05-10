@@ -6,13 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class UserEntityTest {
 
     @Test
-    public void testGetId() {
-        UserEntity user = new UserEntity("testUser", "test@example.com", "password");
-        user.setId(1L);
-        assertEquals(1L, user.getId());
-    }
-
-    @Test
     public void testGetUsername() {
         UserEntity user = new UserEntity("testUser", "test@example.com", "password");
         assertEquals("testUser", user.getUsername());

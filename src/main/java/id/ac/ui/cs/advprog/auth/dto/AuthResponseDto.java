@@ -3,17 +3,18 @@ package id.ac.ui.cs.advprog.auth.dto;
 import lombok.Data;
 
 import java.util.List;
+import java.util.UUID;
 
 @Data
 public class AuthResponseDto {
     private String token;
     private String type = "Bearer";
-    private Long id;
+    private UUID id;
     private String username;
     private String email;
     private List<String> roles;
 
-    public AuthResponseDto(String accessToken, Long id, String username, String email, List<String> roles) {
+    public AuthResponseDto(String accessToken, UUID id, String username, String email, List<String> roles) {
         this.token = accessToken;
         this.id = id;
         this.username = username;
@@ -37,11 +38,11 @@ public class AuthResponseDto {
         this.type = tokenType;
     }
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 
