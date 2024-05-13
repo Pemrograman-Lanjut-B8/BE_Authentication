@@ -112,6 +112,10 @@ public class AuthController {
         }
 
         user.setRoles(roles);
+        user.setFullName(signUpRequest.getFullName());
+        user.setPhoneNumber(signUpRequest.getPhoneNumber());
+        user.setGender(signUpRequest.getGender());
+        user.setBirthDate(signUpRequest.getBirthDate());
         userRepository.save(user);
 
         return new ResponseEntity<>("User registered success!", HttpStatus.OK);

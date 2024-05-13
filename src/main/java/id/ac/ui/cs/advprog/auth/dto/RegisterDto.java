@@ -1,9 +1,12 @@
 package id.ac.ui.cs.advprog.auth.dto;
 
+import java.util.Date;
 import java.util.Set;
 
 import jakarta.validation.constraints.*;
+import lombok.Data;
 
+@Data
 public class RegisterDto {
     @NotBlank
     @Size(min = 3, max = 20)
@@ -20,35 +23,11 @@ public class RegisterDto {
     @Size(min = 3, max = 40)
     private String password;
 
-    public String getUsername() {
-        return username;
-    }
+    private String fullName;
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+    private String phoneNumber;
 
-    public String getEmail() {
-        return email;
-    }
+    private String gender;
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public Set<String> getRole() {
-        return this.role;
-    }
-
-    public void setRole(Set<String> role) {
-        this.role = role;
-    }
+    private Date birthDate;
 }
