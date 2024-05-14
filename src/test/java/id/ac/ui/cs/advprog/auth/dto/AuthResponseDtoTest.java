@@ -23,7 +23,7 @@ public class AuthResponseDtoTest {
 
         // Assert
         assertEquals(accessToken, authResponseDto.getToken());
-        assertEquals("Bearer", authResponseDto.getTokenType());
+        assertEquals("Bearer", authResponseDto.getType());
         assertEquals(id, authResponseDto.getId());
         assertEquals(username, authResponseDto.getUsername());
         assertEquals(email, authResponseDto.getEmail());
@@ -36,15 +36,13 @@ public class AuthResponseDtoTest {
         AuthResponseDto authResponseDto = new AuthResponseDto("oldToken", UUID.randomUUID(), "oldUsername", "old@example.com", Arrays.asList("ROLE_OLD"));
 
         // Act
-        authResponseDto.setAccessToken("newToken");
-        authResponseDto.setTokenType("NewBearer");
+        authResponseDto.setToken("newToken");
         authResponseDto.setUsername("newUsername");
         authResponseDto.setEmail("new@example.com");
         authResponseDto.setRoles(Arrays.asList("ROLE_NEW"));
 
         // Assert
         assertEquals("newToken", authResponseDto.getToken());
-        assertEquals("NewBearer", authResponseDto.getTokenType());
         assertEquals("newUsername", authResponseDto.getUsername());
         assertEquals("new@example.com", authResponseDto.getEmail());
         assertEquals(Arrays.asList("ROLE_NEW"), authResponseDto.getRoles());
