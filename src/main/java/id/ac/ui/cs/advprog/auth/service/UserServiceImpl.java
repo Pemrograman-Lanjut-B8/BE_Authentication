@@ -52,29 +52,113 @@ public class UserServiceImpl implements UserService {
     @Override
     @Async("asyncTaskExecutor")
     public CompletableFuture<UserEntity> create(RegisterDto user) throws RuntimeException {
-        return null;
+        if (userRepository.existsByUsername(user.getUsername())) {
+            throw new RuntimeException("Username already exists: " + user.getUsername());
+        }
+
+        if (userRepository.existsByEmail(user.getEmail())) {
+            throw new RuntimeException("Email already exists: " + user.getEmail());
+        }
+
+        UserEntity newUser = new UserEntity(user.getUsername(),
+                user.getEmail(),
+                passwordEncoder.encode(user.getPassword()));
+
+        Set<String> strRoles = user.getRole();
+        Set<Role> roles = new HashSet<>();
+
+        if (strRoles == null) {
+            Role userRole = roleRepository.findByName(ERole.ROLE_USER)
+                    .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+            roles.add(userRole);
+        } else {
+            strRoles.forEach(role -> {
+                switch (role) {
+                    case "admin":
+                        Role adminRole = null;
+                        adminRole = (Role) roleRepository.findByName(ERole.ROLE_ADMIN)
+                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                        roles.add(adminRole);
+
+                        break;
+                    default:
+                        Role userRole = null;
+                        userRole = (Role) roleRepository.findByName(ERole.ROLE_USER)
+                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                        roles.add(userRole);
+                }
+            });
+        }
+
+        newUser.setRoles(roles);
+        newUser.setFullName(user.getFullName());
+        newUser.setPhoneNumber(user.getPhoneNumber());
+        newUser.setGender(user.getGender());
+        newUser.setBirthDate(user.getBirthDate());
+        userRepository.save(newUser);
+
+        return CompletableFuture.completedFuture(newUser);
     }
 
     @Override
     @Async("asyncTaskExecutor")
     public CompletableFuture<List<UserEntity>> findAll() {
-        return null;
+        return CompletableFuture.completedFuture(userRepository.findAll());
     }
 
     @Override
     @Async("asyncTaskExecutor")
     public CompletableFuture<UserEntity> findByUsername(String username) {
-        return null;
+        UserEntity user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
+        return CompletableFuture.completedFuture(user);
     }
 
     @Override
     @Async("asyncTaskExecutor")
     public void update(String username, ProfileEditDto data) {
+        UserEntity existingUser = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
+
+        if (data.getNewPassword() != null) {
+            if (data.getOldPassword().isEmpty())
+                throw new IllegalArgumentException("Old password must not be blank if new password is provided");
+            else if (!passwordEncoder.matches(data.getOldPassword(), existingUser.getPassword()))
+                throw new IllegalArgumentException("Old password is incorrect");
+            else
+                existingUser.setPassword(passwordEncoder.encode(data.getNewPassword()));
+        }
+
+        existingUser.setFullName(data.getFullName());
+        existingUser.setProfilePicture(data.getProfilePicture());
+        existingUser.setBio(data.getBio());
+        existingUser.setGender(data.getGender());
+        existingUser.setBirthDate(data.getBirthDate());
+
+        userRepository.save(existingUser);
     }
 
     @Override
     @Async("asyncTaskExecutor")
     public CompletableFuture<AuthResponseDto> login(LoginDto user) {
-        return null;
+        return CompletableFuture.supplyAsync(() -> {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            user.getUsername(),
+                            user.getPassword()));
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            String token = jwtGenerator.generateToken(authentication);
+
+            UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+            List<String> roles = userDetails.getAuthorities().stream()
+                    .map(item -> item.getAuthority())
+                    .collect(Collectors.toList());
+
+            return new AuthResponseDto(token,
+                    userDetails.getId(),
+                    userDetails.getUsername(),
+                    userDetails.getEmail(),
+                    roles);
+        });
     }
 }
