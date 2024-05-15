@@ -3,105 +3,109 @@ package id.ac.ui.cs.advprog.auth.controller;
 import id.ac.ui.cs.advprog.auth.dto.AuthResponseDto;
 import id.ac.ui.cs.advprog.auth.dto.LoginDto;
 import id.ac.ui.cs.advprog.auth.dto.RegisterDto;
-import id.ac.ui.cs.advprog.auth.model.ERole;
-import id.ac.ui.cs.advprog.auth.model.Role;
-import id.ac.ui.cs.advprog.auth.model.UserEntity;
-import id.ac.ui.cs.advprog.auth.repository.RoleRepository;
-import id.ac.ui.cs.advprog.auth.repository.UserRepository;
-import id.ac.ui.cs.advprog.auth.security.JWTGenerator;
-import id.ac.ui.cs.advprog.auth.security.UserDetailsImpl;
+import id.ac.ui.cs.advprog.auth.service.UserService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.mockito.MockitoAnnotations;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.Collections;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
-@ExtendWith(MockitoExtension.class)
+@WebMvcTest(AuthController.class)
 public class AuthControllerTest {
 
-    @Mock
-    private AuthenticationManager authenticationManager;
+    @Autowired
+    private MockMvc mockMvc;
 
-    @Mock
-    private UserRepository userRepository;
+    @MockBean
+    private UserService userService;
 
-    @Mock
-    private RoleRepository roleRepository;
+    private AuthResponseDto authResponseDto;
 
-    @Mock
-    private PasswordEncoder passwordEncoder;
-
-    @Mock
-    private JWTGenerator jwtGenerator;
-
-    @InjectMocks
-    private AuthController authController;
+    @BeforeEach
+    public void setUp() {
+        MockitoAnnotations.openMocks(this);
+        List<String> roles = Arrays.asList("ROLE_USER");
+        authResponseDto = new AuthResponseDto("mockToken", UUID.randomUUID(), "user", "user@example.com", roles);
+    }
 
     @Test
-    public void testLogin_Success() {
-        // Mock Authentication
-        Authentication authentication = mock(Authentication.class);
-        when(authentication.getPrincipal()).thenReturn(new UserDetailsImpl(UUID.randomUUID(), "username", "email", "password", Collections.emptyList()));
-        when(authenticationManager.authenticate(any())).thenReturn(authentication);
-
-        // Mock JWT Token generation
-        when(jwtGenerator.generateToken(authentication)).thenReturn("mocked_token");
-
-        // Test Login
+    public void testLoginSuccess() throws Exception {
         LoginDto loginDto = new LoginDto();
         loginDto.setUsername("username");
         loginDto.setPassword("password");
-        ResponseEntity<AuthResponseDto> responseEntity = authController.login(loginDto);
+        when(userService.login(any(LoginDto.class)))
+                .thenReturn(CompletableFuture.completedFuture(authResponseDto));
 
-        // Verify authentication manager was called with correct parameters
-        verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\":\"user\",\"password\":\"password\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").value("mockToken"))
+                .andExpect(jsonPath("$.type").value("Bearer"))
+                .andExpect(jsonPath("$.id").value(authResponseDto.getId().toString()))
+                .andExpect(jsonPath("$.username").value("user"))
+                .andExpect(jsonPath("$.email").value("user@example.com"))
+                .andExpect(jsonPath("$.roles[0]").value("ROLE_USER"));
+    }
 
-        // Verify token generation
-        assertEquals("mocked_token", responseEntity.getBody().getToken());
+    @Test
+    public void testLoginFailure() throws Exception {
+        LoginDto loginDto = new LoginDto();
+        loginDto.setUsername("user");
+        loginDto.setPassword("wrongPassword");
+        when(userService.login(any(LoginDto.class)))
+                .thenReturn(CompletableFuture.failedFuture(new Exception("Authentication failed")));
 
-        // Verify user roles (you can use getAuthorities() in your logic)
-        assertEquals(Collections.emptyList(), ((UserDetailsImpl) authentication.getPrincipal()).getAuthorities());
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\":\"user\",\"password\":\"wrongPassword\"}"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.token").isEmpty())
+                .andExpect(jsonPath("$.type").value("Bearer"));
     }
 
 
     @Test
-    public void testRegister_Success() throws Throwable {
-        // Mock UserRepository
-        when(userRepository.existsByUsername(anyString())).thenReturn(false);
-        when(userRepository.existsByEmail(anyString())).thenReturn(false);
-
-        // Mock Password Encoder
-        when(passwordEncoder.encode(anyString())).thenReturn("encoded_password");
-
-        // Mock RoleRepository
-        when(roleRepository.findByName(any())).thenReturn(java.util.Optional.of(new Role(ERole.ROLE_USER)));
-
-        // Test Register
+    public void testRegisterUserConflict() throws Exception {
         RegisterDto registerDto = new RegisterDto();
-        registerDto.setUsername("username");
-        registerDto.setEmail("email");
+        registerDto.setUsername("existingUser");
         registerDto.setPassword("password");
-        registerDto.setRole(Collections.singleton("ROLE_USER"));
-        ResponseEntity<?> responseEntity = authController.registerUser(registerDto);
+        when(userService.create(any(RegisterDto.class)))
+                .thenReturn(CompletableFuture.failedFuture(new RuntimeException("User already exists")));
 
-        // Verify user creation
-        verify(userRepository).save(any(UserEntity.class));
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\":\"existingUser\",\"password\":\"password\"}"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$").value("User already exists"));
+    }
 
-        // Verify successful registration response
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals("User registered success!", responseEntity.getBody());
+    @Test
+    public void testRegisterUserFailure() throws Exception {
+        RegisterDto registerDto = new RegisterDto();
+        registerDto.setUsername("newUser");
+        registerDto.setPassword("password");
+        when(userService.create(any(RegisterDto.class)))
+                .thenReturn(CompletableFuture.failedFuture(new Exception("Database error")));
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\":\"newUser\",\"password\":\"password\"}"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$").value("Failed to register user"));
     }
 }
