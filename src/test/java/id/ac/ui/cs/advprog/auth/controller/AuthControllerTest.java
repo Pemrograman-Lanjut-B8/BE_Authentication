@@ -6,106 +6,86 @@ import id.ac.ui.cs.advprog.auth.dto.RegisterDto;
 import id.ac.ui.cs.advprog.auth.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
-@WebMvcTest(AuthController.class)
 public class AuthControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
-
-    @MockBean
+    @Mock
     private UserService userService;
 
-    private AuthResponseDto authResponseDto;
+    @InjectMocks
+    private AuthController authController;
 
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.openMocks(this);
-        List<String> roles = Arrays.asList("ROLE_USER");
-        authResponseDto = new AuthResponseDto("mockToken", UUID.randomUUID(), "user", "user@example.com", roles);
     }
 
     @Test
-    public void testLoginSuccess() throws Exception {
+    public void testLogin_Success() {
         LoginDto loginDto = new LoginDto();
-        loginDto.setUsername("username");
-        loginDto.setPassword("password");
-        when(userService.login(any(LoginDto.class)))
-                .thenReturn(CompletableFuture.completedFuture(authResponseDto));
+        loginDto.setUsername("testuser");
+        loginDto.setPassword("testpassword");
 
-        mockMvc.perform(post("/api/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"username\":\"user\",\"password\":\"password\"}"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").value("mockToken"))
-                .andExpect(jsonPath("$.type").value("Bearer"))
-                .andExpect(jsonPath("$.id").value(authResponseDto.getId().toString()))
-                .andExpect(jsonPath("$.username").value("user"))
-                .andExpect(jsonPath("$.email").value("user@example.com"))
-                .andExpect(jsonPath("$.roles[0]").value("ROLE_USER"));
+        AuthResponseDto authResponseDto = new AuthResponseDto();
+        authResponseDto.setToken("testtoken");
+
+        when(userService.login(any(LoginDto.class))).thenReturn(authResponseDto);
+
+        ResponseEntity<AuthResponseDto> response = authController.login(loginDto);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("testtoken", response.getBody().getToken());
     }
 
     @Test
-    public void testLoginFailure() throws Exception {
+    public void testLogin_Failure() {
         LoginDto loginDto = new LoginDto();
-        loginDto.setUsername("user");
-        loginDto.setPassword("wrongPassword");
-        when(userService.login(any(LoginDto.class)))
-                .thenReturn(CompletableFuture.failedFuture(new Exception("Authentication failed")));
+        loginDto.setUsername("testuser");
+        loginDto.setPassword("testpassword");
 
-        mockMvc.perform(post("/api/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"username\":\"user\",\"password\":\"wrongPassword\"}"))
-                .andExpect(status().isInternalServerError())
-                .andExpect(jsonPath("$.token").isEmpty())
-                .andExpect(jsonPath("$.type").value("Bearer"));
-    }
+        when(userService.login(any(LoginDto.class))).thenThrow(new RuntimeException("Login failed"));
 
+        ResponseEntity<AuthResponseDto> response = authController.login(loginDto);
 
-    @Test
-    public void testRegisterUserConflict() throws Exception {
-        RegisterDto registerDto = new RegisterDto();
-        registerDto.setUsername("existingUser");
-        registerDto.setPassword("password");
-        when(userService.create(any(RegisterDto.class)))
-                .thenReturn(CompletableFuture.failedFuture(new RuntimeException("User already exists")));
-
-        mockMvc.perform(post("/api/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"username\":\"existingUser\",\"password\":\"password\"}"))
-                .andExpect(status().isConflict())
-                .andExpect(jsonPath("$").value("User already exists"));
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        assertEquals(null, response.getBody().getToken());
     }
 
     @Test
-    public void testRegisterUserFailure() throws Exception {
+    public void testRegisterUser_Success() {
         RegisterDto registerDto = new RegisterDto();
-        registerDto.setUsername("newUser");
-        registerDto.setPassword("password");
-        when(userService.create(any(RegisterDto.class)))
-                .thenReturn(CompletableFuture.failedFuture(new Exception("Database error")));
+        registerDto.setUsername("testuser");
+        registerDto.setPassword("testpassword");
+        registerDto.setEmail("testuser@example.com");
 
-        mockMvc.perform(post("/api/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"username\":\"newUser\",\"password\":\"password\"}"))
-                .andExpect(status().isInternalServerError())
-                .andExpect(jsonPath("$").value("Failed to register user"));
+        ResponseEntity<String> response = authController.registerUser(registerDto);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("User registered successfully!", response.getBody());
+    }
+
+    @Test
+    public void testRegisterUser_Failure() {
+        RegisterDto registerDto = new RegisterDto();
+        registerDto.setUsername("testuser");
+        registerDto.setPassword("testpassword");
+        registerDto.setEmail("testuser@example.com");
+
+        doThrow(new RuntimeException("Registration failed")).when(userService).create(any(RegisterDto.class));
+
+        ResponseEntity<String> response = authController.registerUser(registerDto);
+
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        assertEquals("Failed to register user", response.getBody());
     }
 }

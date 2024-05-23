@@ -1,9 +1,6 @@
 package id.ac.ui.cs.advprog.auth.service;
 
-import id.ac.ui.cs.advprog.auth.dto.AuthResponseDto;
-import id.ac.ui.cs.advprog.auth.dto.LoginDto;
-import id.ac.ui.cs.advprog.auth.dto.ProfileEditDto;
-import id.ac.ui.cs.advprog.auth.dto.RegisterDto;
+import id.ac.ui.cs.advprog.auth.dto.*;
 import id.ac.ui.cs.advprog.auth.model.ERole;
 import id.ac.ui.cs.advprog.auth.model.Role;
 import id.ac.ui.cs.advprog.auth.model.UserEntity;
@@ -50,8 +47,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Async("asyncTaskExecutor")
-    public CompletableFuture<UserEntity> create(RegisterDto user) throws RuntimeException {
+    public UserEntity create(RegisterDto user) throws RuntimeException {
         if (userRepository.existsByUsername(user.getUsername())) {
             throw new RuntimeException("Username already exists: " + user.getUsername());
         }
@@ -97,36 +93,33 @@ public class UserServiceImpl implements UserService {
         newUser.setBirthDate(user.getBirthDate());
         userRepository.save(newUser);
 
-        return CompletableFuture.completedFuture(newUser);
+        return newUser;
+    }
+
+    @Override
+    public List<UserEntity> findAll() {
+        return userRepository.findAll();
     }
 
     @Override
     @Async("asyncTaskExecutor")
-    public CompletableFuture<List<UserEntity>> findAll() {
-        return CompletableFuture.completedFuture(userRepository.findAll());
-    }
-
-    @Override
-    @Async("asyncTaskExecutor")
-    public CompletableFuture<UserEntity> findByUsername(String username) {
+    public UserDto findByUsername(String username) {
         UserEntity user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
-        return CompletableFuture.completedFuture(user);
+        return convertToDto(user);
     }
 
     @Override
-    @Async("asyncTaskExecutor")
-    public void update(String username, ProfileEditDto data) {
+    public void update(String username, ProfileEditDto data) throws UsernameNotFoundException, IllegalArgumentException {
         UserEntity existingUser = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
 
         if (data.getNewPassword() != null) {
-            if (data.getOldPassword().isEmpty())
+            if (data.getOldPassword() == null || data.getOldPassword().isEmpty())
                 throw new IllegalArgumentException("Old password must not be blank if new password is provided");
-            else if (!passwordEncoder.matches(data.getOldPassword(), existingUser.getPassword()))
+            if (!passwordEncoder.matches(data.getOldPassword(), existingUser.getPassword()))
                 throw new IllegalArgumentException("Old password is incorrect");
-            else
-                existingUser.setPassword(passwordEncoder.encode(data.getNewPassword()));
+            existingUser.setPassword(passwordEncoder.encode(data.getNewPassword()));
         }
 
         existingUser.setFullName(data.getFullName());
@@ -139,26 +132,38 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Async("asyncTaskExecutor")
-    public CompletableFuture<AuthResponseDto> login(LoginDto user) {
-        return CompletableFuture.supplyAsync(() -> {
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            user.getUsername(),
-                            user.getPassword()));
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            String token = jwtGenerator.generateToken(authentication);
+    public AuthResponseDto login(LoginDto user) {
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        user.getUsername(),
+                        user.getPassword()));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String token = jwtGenerator.generateToken(authentication);
 
-            UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-            List<String> roles = userDetails.getAuthorities().stream()
-                    .map(item -> item.getAuthority())
-                    .collect(Collectors.toList());
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(item -> item.getAuthority())
+                .collect(Collectors.toList());
 
-            return new AuthResponseDto(token,
-                    userDetails.getId(),
-                    userDetails.getUsername(),
-                    userDetails.getEmail(),
-                    roles);
-        });
+        return new AuthResponseDto(token,
+                userDetails.getId(),
+                userDetails.getUsername(),
+                userDetails.getEmail(),
+                roles);
+    }
+
+    private UserDto convertToDto(UserEntity user) {
+        UserDto userDto = new UserDto();
+        userDto.setId(user.getId());
+        userDto.setUsername(user.getUsername());
+        userDto.setEmail(user.getEmail());
+        userDto.setFullName(user.getFullName());
+        userDto.setPhoneNumber(user.getPhoneNumber());
+        userDto.setProfilePicture(user.getProfilePicture());
+        userDto.setBio(user.getBio());
+        userDto.setGender(user.getGender());
+        userDto.setBirthDate(user.getBirthDate());
+        userDto.setRoles(user.getRoles().stream().map(Role::getName).collect(Collectors.toSet()));
+        return userDto;
     }
 }
