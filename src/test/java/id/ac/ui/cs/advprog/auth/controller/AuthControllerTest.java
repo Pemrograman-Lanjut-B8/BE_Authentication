@@ -3,105 +3,89 @@ package id.ac.ui.cs.advprog.auth.controller;
 import id.ac.ui.cs.advprog.auth.dto.AuthResponseDto;
 import id.ac.ui.cs.advprog.auth.dto.LoginDto;
 import id.ac.ui.cs.advprog.auth.dto.RegisterDto;
-import id.ac.ui.cs.advprog.auth.model.ERole;
-import id.ac.ui.cs.advprog.auth.model.Role;
-import id.ac.ui.cs.advprog.auth.model.UserEntity;
-import id.ac.ui.cs.advprog.auth.repository.RoleRepository;
-import id.ac.ui.cs.advprog.auth.repository.UserRepository;
-import id.ac.ui.cs.advprog.auth.security.JWTGenerator;
-import id.ac.ui.cs.advprog.auth.security.UserDetailsImpl;
+import id.ac.ui.cs.advprog.auth.service.UserService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-
-import java.util.Collections;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
 public class AuthControllerTest {
 
     @Mock
-    private AuthenticationManager authenticationManager;
-
-    @Mock
-    private UserRepository userRepository;
-
-    @Mock
-    private RoleRepository roleRepository;
-
-    @Mock
-    private PasswordEncoder passwordEncoder;
-
-    @Mock
-    private JWTGenerator jwtGenerator;
+    private UserService userService;
 
     @InjectMocks
     private AuthController authController;
 
-    @Test
-    public void testLogin_Success() {
-        // Mock Authentication
-        Authentication authentication = mock(Authentication.class);
-        when(authentication.getPrincipal()).thenReturn(new UserDetailsImpl(UUID.randomUUID(), "username", "email", "password", Collections.emptyList()));
-        when(authenticationManager.authenticate(any())).thenReturn(authentication);
-
-        // Mock JWT Token generation
-        when(jwtGenerator.generateToken(authentication)).thenReturn("mocked_token");
-
-        // Test Login
-        LoginDto loginDto = new LoginDto();
-        loginDto.setUsername("username");
-        loginDto.setPassword("password");
-        ResponseEntity<AuthResponseDto> responseEntity = authController.login(loginDto);
-
-        // Verify authentication manager was called with correct parameters
-        verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
-
-        // Verify token generation
-        assertEquals("mocked_token", responseEntity.getBody().getToken());
-
-        // Verify user roles (you can use getAuthorities() in your logic)
-        assertEquals(Collections.emptyList(), ((UserDetailsImpl) authentication.getPrincipal()).getAuthorities());
+    @BeforeEach
+    public void setUp() {
+        MockitoAnnotations.openMocks(this);
     }
 
+    @Test
+    public void testLogin_Success() {
+        LoginDto loginDto = new LoginDto();
+        loginDto.setUsername("testuser");
+        loginDto.setPassword("testpassword");
+
+        AuthResponseDto authResponseDto = new AuthResponseDto();
+        authResponseDto.setToken("testtoken");
+
+        when(userService.login(any(LoginDto.class))).thenReturn(authResponseDto);
+
+        ResponseEntity<AuthResponseDto> response = authController.login(loginDto);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("testtoken", response.getBody().getToken());
+    }
 
     @Test
-    public void testRegister_Success() throws Throwable {
-        // Mock UserRepository
-        when(userRepository.existsByUsername(anyString())).thenReturn(false);
-        when(userRepository.existsByEmail(anyString())).thenReturn(false);
+    public void testLogin_Failure() {
+        LoginDto loginDto = new LoginDto();
+        loginDto.setUsername("testuser");
+        loginDto.setPassword("testpassword");
 
-        // Mock Password Encoder
-        when(passwordEncoder.encode(anyString())).thenReturn("encoded_password");
+        when(userService.login(any(LoginDto.class))).thenThrow(new RuntimeException("Login failed"));
 
-        // Mock RoleRepository
-        when(roleRepository.findByName(any())).thenReturn(java.util.Optional.of(new Role(ERole.ROLE_USER)));
+        ResponseEntity<AuthResponseDto> response = authController.login(loginDto);
 
-        // Test Register
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        assertEquals(null, response.getBody().getToken());
+    }
+
+    @Test
+    public void testRegisterUser_Success() {
         RegisterDto registerDto = new RegisterDto();
-        registerDto.setUsername("username");
-        registerDto.setEmail("email");
-        registerDto.setPassword("password");
-        registerDto.setRole(Collections.singleton("ROLE_USER"));
-        ResponseEntity<?> responseEntity = authController.registerUser(registerDto);
+        registerDto.setUsername("testuser");
+        registerDto.setPassword("testpassword");
+        registerDto.setEmail("testuser@example.com");
 
-        // Verify user creation
-        verify(userRepository).save(any(UserEntity.class));
+        ResponseEntity<String> response = authController.registerUser(registerDto);
 
-        // Verify successful registration response
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals("User registered success!", responseEntity.getBody());
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("User registered successfully!", response.getBody());
+    }
+
+    @Test
+    public void testRegisterUser_Failure() {
+        RegisterDto registerDto = new RegisterDto();
+        registerDto.setUsername("testuser");
+        registerDto.setPassword("testpassword");
+        registerDto.setEmail("testuser@example.com");
+
+        doThrow(new RuntimeException("Registration failed")).when(userService).create(any(RegisterDto.class));
+
+        ResponseEntity<String> response = authController.registerUser(registerDto);
+
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        assertEquals("Failed to register user", response.getBody());
     }
 }
