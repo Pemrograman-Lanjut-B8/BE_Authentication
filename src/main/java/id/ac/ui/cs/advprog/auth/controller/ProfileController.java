@@ -24,6 +24,7 @@ public class ProfileController {
         this.userService = userService;
     }
 
+    @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/")
     public ResponseEntity<UserDto> getUserProfile(@RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
         // Remove the "Bearer " prefix
@@ -41,7 +42,8 @@ public class ProfileController {
         }
     }
 
-    @PostMapping("/edit")
+    @CrossOrigin(origins = "http://localhost:3000")
+    @PutMapping("/edit")
     public ResponseEntity<Object> editProfile(@RequestBody ProfileEditDto profileDto, @RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
         // Remove the "Bearer " prefix
         String jwtToken = token.substring(7);
