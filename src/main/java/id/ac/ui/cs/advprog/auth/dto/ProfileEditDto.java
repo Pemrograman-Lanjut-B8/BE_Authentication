@@ -9,6 +9,7 @@ public class ProfileEditDto {
     private String oldPassword;
     private String newPassword;
     private String fullName;
+    private String phoneNumber;
     private String profilePicture;
     private String bio;
     private String gender;

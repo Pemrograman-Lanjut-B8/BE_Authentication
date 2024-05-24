@@ -9,7 +9,6 @@ import id.ac.ui.cs.advprog.auth.repository.UserRepository;
 import id.ac.ui.cs.advprog.auth.security.JWTGenerator;
 import id.ac.ui.cs.advprog.auth.security.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -102,7 +101,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Async("asyncTaskExecutor")
     public UserDto findByUsername(String username) {
         UserEntity user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
@@ -114,7 +112,7 @@ public class UserServiceImpl implements UserService {
         UserEntity existingUser = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
 
-        if (data.getNewPassword() != null) {
+        if (data.getNewPassword() != null && !data.getNewPassword().isEmpty()) {
             if (data.getOldPassword() == null || data.getOldPassword().isEmpty())
                 throw new IllegalArgumentException("Old password must not be blank if new password is provided");
             if (!passwordEncoder.matches(data.getOldPassword(), existingUser.getPassword()))
@@ -123,6 +121,7 @@ public class UserServiceImpl implements UserService {
         }
 
         existingUser.setFullName(data.getFullName());
+        existingUser.setPhoneNumber(data.getPhoneNumber());
         existingUser.setProfilePicture(data.getProfilePicture());
         existingUser.setBio(data.getBio());
         existingUser.setGender(data.getGender());
