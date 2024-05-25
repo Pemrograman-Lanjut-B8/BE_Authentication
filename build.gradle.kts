@@ -3,6 +3,15 @@ plugins {
 	id("org.springframework.boot") version "3.2.4"
 	id("io.spring.dependency-management") version "1.1.4"
 	jacoco
+	id("org.sonarqube") version "4.4.1.3373"
+}
+
+sonar {
+	properties {
+		property("sonar.projectKey", "Pemrograman-Lanjut-B8_BE_Authentication")
+		property("sonar.organization", "pemrograman-lanjut-b8")
+		property("sonar.host.url", "https://sonarcloud.io")
+	}
 }
 
 group = "id.ac.ui.cs.advprog"
