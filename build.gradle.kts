@@ -62,7 +62,6 @@ tasks.jacocoTestReport {
 		fileTree(it) { exclude(
 				"**/*Application**",
 				"**/dto/*",
-				"**/security/*",
 				"**/seeder/*"
 		) }
 	}))

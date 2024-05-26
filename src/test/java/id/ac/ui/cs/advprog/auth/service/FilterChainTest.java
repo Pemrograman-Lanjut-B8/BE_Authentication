@@ -62,7 +62,6 @@ class FilterChainTest {
         when(request.getHeader("Authorization")).thenReturn("Bearer invalidtoken");
         when(tokenGenerator.validateToken("invalidtoken")).thenReturn(false);
 
-        // Adjusted assertion to check for the presence of the expected exception
         assertThrows(AuthenticationCredentialsNotFoundException.class, () -> {
             headerFilter.doFilter(request, response);
         });
