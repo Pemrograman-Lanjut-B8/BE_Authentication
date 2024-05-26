@@ -6,14 +6,6 @@ plugins {
 	id("org.sonarqube") version "4.4.1.3373"
 }
 
-sonar {
-	properties {
-		property("sonar.projectKey", "Pemrograman-Lanjut-B8_BE_Authentication")
-		property("sonar.organization", "pemrograman-lanjut-b8")
-		property("sonar.host.url", "https://sonarcloud.io")
-	}
-}
-
 group = "id.ac.ui.cs.advprog"
 version = "0.0.1-SNAPSHOT"
 
@@ -67,12 +59,23 @@ tasks.test {
 }
 tasks.jacocoTestReport {
 	classDirectories.setFrom(files(classDirectories.files.map {
-		fileTree(it) { exclude("**/*Application**") }
+		fileTree(it) { exclude(
+				"**/*Application**",
+				"**/dto/*",
+				"**/security/*"
+		) }
 	}))
 	dependsOn(tasks.test) // tests are required to run before generating the report
 	reports {
-		xml.required.set(false)
-		csv.required.set(false)
+		xml.required.set(true)
+		csv.required.set(true)
 		html.outputLocation.set(layout.buildDirectory.dir("jacocoHtml"))
+	}
+}
+sonar {
+	properties {
+		property("sonar.projectKey", "Pemrograman-Lanjut-B8_BE_Authentication")
+		property("sonar.organization", "pemrograman-lanjut-b8")
+		property("sonar.host.url", "https://sonarcloud.io")
 	}
 }
