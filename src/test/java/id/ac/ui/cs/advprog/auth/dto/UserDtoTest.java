@@ -43,67 +43,67 @@ public class UserDtoTest {
     }
 
     @Test
-    public void testSetId() {
+    void testSetId() {
         userDto.setId(id);
         assertEquals(id, userDto.getId());
     }
 
     @Test
-    public void testSetUsername() {
+    void testSetUsername() {
         userDto.setUsername(username);
         assertEquals(username, userDto.getUsername());
     }
 
     @Test
-    public void testSetEmail() {
+    void testSetEmail() {
         userDto.setEmail(email);
         assertEquals(email, userDto.getEmail());
     }
 
     @Test
-    public void testSetFullName() {
+    void testSetFullName() {
         userDto.setFullName(fullName);
         assertEquals(fullName, userDto.getFullName());
     }
 
     @Test
-    public void testSetPhoneNumber() {
+    void testSetPhoneNumber() {
         userDto.setPhoneNumber(phoneNumber);
         assertEquals(phoneNumber, userDto.getPhoneNumber());
     }
 
     @Test
-    public void testSetProfilePicture() {
+    void testSetProfilePicture() {
         userDto.setProfilePicture(profilePicture);
         assertEquals(profilePicture, userDto.getProfilePicture());
     }
 
     @Test
-    public void testSetBio() {
+    void testSetBio() {
         userDto.setBio(bio);
         assertEquals(bio, userDto.getBio());
     }
 
     @Test
-    public void testSetGender() {
+    void testSetGender() {
         userDto.setGender(gender);
         assertEquals(gender, userDto.getGender());
     }
 
     @Test
-    public void testSetBirthDate() {
+    void testSetBirthDate() {
         userDto.setBirthDate(birthDate);
         assertEquals(birthDate, userDto.getBirthDate());
     }
 
     @Test
-    public void testSetRoles() {
+    void testSetRoles() {
         userDto.setRoles(roles);
         assertEquals(roles, userDto.getRoles());
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         userDto.setId(id);
         userDto.setUsername(username);
         userDto.setEmail(email);
@@ -131,61 +131,61 @@ public class UserDtoTest {
     }
 
     @Test
-    public void testNotNullId() {
+    void testNotNullId() {
         userDto.setId(id);
         assertNotNull(userDto.getId());
     }
 
     @Test
-    public void testNotNullUsername() {
+    void testNotNullUsername() {
         userDto.setUsername(username);
         assertNotNull(userDto.getUsername());
     }
 
     @Test
-    public void testNotNullEmail() {
+    void testNotNullEmail() {
         userDto.setEmail(email);
         assertNotNull(userDto.getEmail());
     }
 
     @Test
-    public void testNotNullFullName() {
+    void testNotNullFullName() {
         userDto.setFullName(fullName);
         assertNotNull(userDto.getFullName());
     }
 
     @Test
-    public void testNotNullPhoneNumber() {
+    void testNotNullPhoneNumber() {
         userDto.setPhoneNumber(phoneNumber);
         assertNotNull(userDto.getPhoneNumber());
     }
 
     @Test
-    public void testNotNullProfilePicture() {
+    void testNotNullProfilePicture() {
         userDto.setProfilePicture(profilePicture);
         assertNotNull(userDto.getProfilePicture());
     }
 
     @Test
-    public void testNotNullBio() {
+    void testNotNullBio() {
         userDto.setBio(bio);
         assertNotNull(userDto.getBio());
     }
 
     @Test
-    public void testNotNullGender() {
+    void testNotNullGender() {
         userDto.setGender(gender);
         assertNotNull(userDto.getGender());
     }
 
     @Test
-    public void testNotNullBirthDate() {
+    void testNotNullBirthDate() {
         userDto.setBirthDate(birthDate);
         assertNotNull(userDto.getBirthDate());
     }
 
     @Test
-    public void testNotNullRoles() {
+    void testNotNullRoles() {
         userDto.setRoles(roles);
         assertNotNull(userDto.getRoles());
     }

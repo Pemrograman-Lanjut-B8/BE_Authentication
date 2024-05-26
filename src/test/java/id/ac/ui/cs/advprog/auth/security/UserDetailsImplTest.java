@@ -48,7 +48,7 @@ class UserDetailsImplTest {
 
         Collection<? extends GrantedAuthority> authorities = userEntity.getRoles().stream()
                 .map(role -> new SimpleGrantedAuthority(role.getName().name()))
-                .collect(Collectors.toList());
+                .toList();
 
         assertEquals(authorities, userDetailsFromBuild.getAuthorities());
     }
@@ -120,7 +120,7 @@ class UserDetailsImplTest {
                 userEntity.getPassword(),
                 userEntity.getRoles().stream()
                         .map(role -> new SimpleGrantedAuthority(role.getName().name()))
-                        .collect(Collectors.toList())
+                        .toList()
         );
         assertNotEquals(userDetails, userDetailsDifferentId);
 

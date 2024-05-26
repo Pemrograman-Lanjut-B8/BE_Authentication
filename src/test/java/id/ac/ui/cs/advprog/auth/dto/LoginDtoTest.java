@@ -6,28 +6,22 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class LoginDtoTest {
 
     @Test
-    public void testLoginDtoPasswordGetterAndSetter() {
-        // Arrange
+    void testLoginDtoPasswordGetterAndSetter() {
         String password = "password123";
 
-        // Act
         LoginDto loginDto = new LoginDto();
         loginDto.setPassword(password);
 
-        // Assert
         assertEquals(password, loginDto.getPassword());
     }
 
     @Test
-    public void testLoginDtoUsernameGetterAndSetter() {
-        // Arrange
+    void testLoginDtoUsernameGetterAndSetter() {
         String username = "john_doe";
 
-        // Act
         LoginDto loginDto = new LoginDto();
         loginDto.setUsername(username);
 
-        // Assert
         assertEquals(username, loginDto.getUsername());
     }
 }

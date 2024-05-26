@@ -1,6 +1,8 @@
 package id.ac.ui.cs.advprog.auth.service;
 
 import id.ac.ui.cs.advprog.auth.dto.*;
+import id.ac.ui.cs.advprog.auth.exception.EmailAlreadyExistsException;
+import id.ac.ui.cs.advprog.auth.exception.UsernameAlreadyExistsException;
 import id.ac.ui.cs.advprog.auth.model.ERole;
 import id.ac.ui.cs.advprog.auth.model.Role;
 import id.ac.ui.cs.advprog.auth.model.UserEntity;
@@ -47,11 +49,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserEntity create(RegisterDto user) throws RuntimeException {
         if (userRepository.existsByUsername(user.getUsername())) {
-            throw new RuntimeException("Username already exists: " + user.getUsername());
+            throw new UsernameAlreadyExistsException("Username already exists: " + user.getUsername());
         }
 
         if (userRepository.existsByEmail(user.getEmail())) {
-            throw new RuntimeException("Email already exists: " + user.getEmail());
+            throw new EmailAlreadyExistsException("Email already exists: " + user.getEmail());
         }
 
         UserEntity newUser = new UserEntity(user.getUsername(),
@@ -67,19 +69,16 @@ public class UserServiceImpl implements UserService {
             roles.add(userRole);
         } else {
             strRoles.forEach(role -> {
-                switch (role) {
-                    case "admin":
-                        Role adminRole = null;
-                        adminRole = (Role) roleRepository.findByName(ERole.ROLE_ADMIN)
-                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-                        roles.add(adminRole);
-
-                        break;
-                    default:
-                        Role userRole = null;
-                        userRole = (Role) roleRepository.findByName(ERole.ROLE_USER)
-                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-                        roles.add(userRole);
+                if (role.equals("admin")) {
+                    Role adminRole = null;
+                    adminRole = roleRepository.findByName(ERole.ROLE_ADMIN)
+                            .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                    roles.add(adminRole);
+                } else {
+                    Role userRole = null;
+                    userRole = roleRepository.findByName(ERole.ROLE_USER)
+                            .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                    roles.add(userRole);
                 }
             });
         }
@@ -141,7 +140,7 @@ public class UserServiceImpl implements UserService {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(item -> item.getAuthority())
-                .collect(Collectors.toList());
+                .toList();
 
         return new AuthResponseDto(token,
                 userDetails.getId(),
