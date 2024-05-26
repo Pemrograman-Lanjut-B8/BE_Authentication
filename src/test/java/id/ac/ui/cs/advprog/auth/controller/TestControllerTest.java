@@ -18,13 +18,13 @@ public class TestControllerTest {
     private TestController testController;
 
     @Test
-    public void testAllAccess() {
+    void testAllAccess() {
         String result = testController.allAccess();
         assertEquals("Public Content.", result);
     }
 
     @Test
-    public void testUserAccess() {
+    void testUserAccess() {
         // Mock Authentication with user role
         Authentication auth = mock(Authentication.class);
         SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken("user", null));
@@ -33,7 +33,7 @@ public class TestControllerTest {
     }
 
     @Test
-    public void testAdminAccess() {
+    void testAdminAccess() {
         // Mock Authentication with admin role
         Authentication auth = mock(Authentication.class);
         SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken("admin", null));

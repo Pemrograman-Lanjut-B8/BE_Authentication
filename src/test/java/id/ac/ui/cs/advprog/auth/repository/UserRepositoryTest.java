@@ -16,7 +16,7 @@ public class UserRepositoryTest {
     private UserRepository userRepository;
 
     @Test
-    public void testFindByUsername_ExistingUser() {
+    void testFindByUsername_ExistingUser() {
         // Mocking the behavior of the user repository
         UserEntity user = new UserEntity("testUser", "test@example.com", "password");
         when(userRepository.findByUsername("testUser")).thenReturn(Optional.of(user));
@@ -29,7 +29,7 @@ public class UserRepositoryTest {
     }
 
     @Test
-    public void testFindByUsername_NonExistingUser() {
+    void testFindByUsername_NonExistingUser() {
         // Mocking the behavior of the user repository
         when(userRepository.findByUsername("nonExistingUser")).thenReturn(Optional.empty());
 
@@ -41,7 +41,7 @@ public class UserRepositoryTest {
     }
 
     @Test
-    public void testExistsByUsername_ExistingUsername() {
+    void testExistsByUsername_ExistingUsername() {
         // Mocking the behavior of the user repository
         when(userRepository.existsByUsername("existingUsername")).thenReturn(true);
 
@@ -53,7 +53,7 @@ public class UserRepositoryTest {
     }
 
     @Test
-    public void testExistsByUsername_NonExistingUsername() {
+    void testExistsByUsername_NonExistingUsername() {
         // Mocking the behavior of the user repository
         when(userRepository.existsByUsername("nonExistingUsername")).thenReturn(false);
 
@@ -65,7 +65,7 @@ public class UserRepositoryTest {
     }
 
     @Test
-    public void testExistsByEmail_ExistingEmail() {
+    void testExistsByEmail_ExistingEmail() {
         // Mocking the behavior of the user repository
         when(userRepository.existsByEmail("existing@example.com")).thenReturn(true);
 
@@ -77,7 +77,7 @@ public class UserRepositoryTest {
     }
 
     @Test
-    public void testExistsByEmail_NonExistingEmail() {
+    void testExistsByEmail_NonExistingEmail() {
         // Mocking the behavior of the user repository
         when(userRepository.existsByEmail("nonExisting@example.com")).thenReturn(false);
 

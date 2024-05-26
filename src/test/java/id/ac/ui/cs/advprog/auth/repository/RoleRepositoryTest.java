@@ -17,7 +17,7 @@ public class RoleRepositoryTest {
     private RoleRepository roleRepository;
 
     @Test
-    public void testFindByName_ExistingRole() {
+    void testFindByName_ExistingRole() {
         // Mocking the behavior of the role repository
         Role role = new Role(ERole.ROLE_USER);
         when(roleRepository.findByName(ERole.ROLE_USER)).thenReturn(Optional.of(role));
@@ -30,7 +30,7 @@ public class RoleRepositoryTest {
     }
 
     @Test
-    public void testFindByName_NonExistingRole() {
+    void testFindByName_NonExistingRole() {
         // Mocking the behavior of the role repository
         when(roleRepository.findByName(ERole.ROLE_ADMIN)).thenReturn(Optional.empty());
 

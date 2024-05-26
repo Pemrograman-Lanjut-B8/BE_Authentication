@@ -8,7 +8,7 @@ public class UserTest {
     UserEntity user;
 
     @BeforeEach
-    public void testUserModel() {
+    void testUserModel() {
         // Create a new user instance
         user = new UserEntity();
 

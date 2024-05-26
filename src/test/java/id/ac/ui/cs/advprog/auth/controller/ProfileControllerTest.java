@@ -33,12 +33,12 @@ public class ProfileControllerTest {
     private ProfileController profileController;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    public void testGetUserProfile_Success() {
+    void testGetUserProfile_Success() {
         String token = "Bearer testtoken";
         String username = "testuser";
         UserDto userDto = new UserDto();
@@ -54,7 +54,7 @@ public class ProfileControllerTest {
     }
 
     @Test
-    public void testGetUserProfile_UsernameNotFound() {
+    void testGetUserProfile_UsernameNotFound() {
         String token = "Bearer testtoken";
         String username = "testuser";
 
@@ -68,7 +68,7 @@ public class ProfileControllerTest {
     }
 
     @Test
-    public void testGetUserProfile_InternalServerError() {
+    void testGetUserProfile_InternalServerError() {
         String token = "Bearer testtoken";
         String username = "testuser";
 
@@ -82,7 +82,7 @@ public class ProfileControllerTest {
     }
 
     @Test
-    public void testEditProfile_Success() {
+    void testEditProfile_Success() {
         String token = "Bearer testtoken";
         String username = "testuser";
         ProfileEditDto profileEditDto = new ProfileEditDto();
@@ -102,7 +102,7 @@ public class ProfileControllerTest {
     }
 
     @Test
-    public void testEditProfile_UsernameNotFound() {
+    void testEditProfile_UsernameNotFound() {
         String token = "Bearer testtoken";
         String username = "testuser";
         ProfileEditDto profileEditDto = new ProfileEditDto();
@@ -124,7 +124,7 @@ public class ProfileControllerTest {
     }
 
     @Test
-    public void testEditProfile_BadRequest() {
+    void testEditProfile_BadRequest() {
         String token = "Bearer testtoken";
         String username = "testuser";
         ProfileEditDto profileEditDto = new ProfileEditDto();
@@ -146,7 +146,7 @@ public class ProfileControllerTest {
     }
 
     @Test
-    public void testEditProfile_InternalServerError() {
+    void testEditProfile_InternalServerError() {
         String token = "Bearer testtoken";
         String username = "testuser";
         ProfileEditDto profileEditDto = new ProfileEditDto();

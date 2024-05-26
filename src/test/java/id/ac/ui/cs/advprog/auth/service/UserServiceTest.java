@@ -338,7 +338,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void testLogin() {
+    void testLogin() {
         // Arrange
         String username = "testuser";
         String password = "testpassword";

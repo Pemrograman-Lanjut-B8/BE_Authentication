@@ -62,7 +62,8 @@ tasks.jacocoTestReport {
 		fileTree(it) { exclude(
 				"**/*Application**",
 				"**/dto/*",
-				"**/security/*"
+				"**/security/*",
+				"**/seeder/*"
 		) }
 	}))
 	dependsOn(tasks.test) // tests are required to run before generating the report

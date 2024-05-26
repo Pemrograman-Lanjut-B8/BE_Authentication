@@ -1,70 +1,87 @@
 package id.ac.ui.cs.advprog.auth.service;
 
 import id.ac.ui.cs.advprog.auth.security.JWTGenerator;
-import id.ac.ui.cs.advprog.auth.service.CredentialFilter;
-import id.ac.ui.cs.advprog.auth.service.HeaderFilter;
-import id.ac.ui.cs.advprog.auth.service.ValidateTokenFilter;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.Mockito;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
-
-import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
-public class FilterChainTest {
+class FilterChainTest {
 
-    @Mock
+    private HeaderFilter headerFilter;
+    private CredentialFilter credentialFilter;
+    private ValidateTokenFilter validateTokenFilter;
     private JWTGenerator tokenGenerator;
 
-    @InjectMocks
-    private HeaderFilter firstHandler;
+    @BeforeEach
+    void setUp() {
+        headerFilter = new HeaderFilter();
+        credentialFilter = new CredentialFilter();
+        validateTokenFilter = new ValidateTokenFilter();
+        tokenGenerator = mock(JWTGenerator.class);
 
-    @InjectMocks
-    private CredentialFilter secondHandler;
-
-    @InjectMocks
-    private ValidateTokenFilter thirdHandler;
+        headerFilter.setNextFilter(credentialFilter);
+        credentialFilter.setNextFilter(validateTokenFilter);
+        validateTokenFilter.setTokenGenerator(tokenGenerator);
+    }
 
     @Test
-    public void testFilterChain_Unauthorized() throws ServletException, IOException {
-        firstHandler.setNextFilter(secondHandler);
-        secondHandler.setNextFilter(thirdHandler);
-        thirdHandler.setTokenGenerator(tokenGenerator);
-
+    void testHeaderFilterWithoutAuthorizationHeader() throws Exception {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpServletResponse response = mock(HttpServletResponse.class);
 
         when(request.getHeader("Authorization")).thenReturn(null);
 
-        firstHandler.doFilter(request, response);
+        headerFilter.doFilter(request, response);
 
         verify(response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
     }
 
     @Test
-    public void testFilterChain_AuthenticationError() throws ServletException, IOException {
-        firstHandler.setNextFilter(secondHandler);
-        secondHandler.setNextFilter(thirdHandler);
-        thirdHandler.setTokenGenerator(tokenGenerator);
-
+    void testCredentialFilterWithoutBearer() throws Exception {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpServletResponse response = mock(HttpServletResponse.class);
 
-        when(request.getHeader("Authorization")).thenReturn("Bearer invalid-token");
-        when(tokenGenerator.validateToken("invalid-token")).thenReturn(false);
+        when(request.getHeader("Authorization")).thenReturn("Basic abcdef");
 
+        headerFilter.doFilter(request, response);
+
+        verify(response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+    }
+
+    @Test
+    void testValidateTokenFilterWithInvalidToken() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpServletResponse response = mock(HttpServletResponse.class);
+
+        when(request.getHeader("Authorization")).thenReturn("Bearer invalidtoken");
+        when(tokenGenerator.validateToken("invalidtoken")).thenReturn(false);
+
+        // Adjusted assertion to check for the presence of the expected exception
         assertThrows(AuthenticationCredentialsNotFoundException.class, () -> {
-            firstHandler.doFilter(request, response);
+            headerFilter.doFilter(request, response);
         });
+
+        verify(response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        verify(tokenGenerator).validateToken("invalidtoken");
+    }
+
+    @Test
+    void testFilterChainWithValidToken() throws Exception {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpServletResponse response = mock(HttpServletResponse.class);
+
+        when(request.getHeader("Authorization")).thenReturn("Bearer validtoken");
+        when(tokenGenerator.validateToken("validtoken")).thenReturn(true);
+
+        headerFilter.doFilter(request, response);
+
+        verify(response, never()).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        verify(tokenGenerator).validateToken("validtoken");
     }
 }

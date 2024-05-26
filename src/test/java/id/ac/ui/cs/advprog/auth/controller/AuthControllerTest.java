@@ -12,7 +12,10 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.util.Objects;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
@@ -26,12 +29,12 @@ public class AuthControllerTest {
     private AuthController authController;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    public void testLogin_Success() {
+    void testLogin_Success() {
         LoginDto loginDto = new LoginDto();
         loginDto.setUsername("testuser");
         loginDto.setPassword("testpassword");
@@ -44,11 +47,11 @@ public class AuthControllerTest {
         ResponseEntity<AuthResponseDto> response = authController.login(loginDto);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("testtoken", response.getBody().getToken());
+        assertEquals("testtoken", Objects.requireNonNull(response.getBody()).getToken());
     }
 
     @Test
-    public void testLogin_Failure() {
+    void testLogin_Failure() {
         LoginDto loginDto = new LoginDto();
         loginDto.setUsername("testuser");
         loginDto.setPassword("testpassword");
@@ -58,11 +61,11 @@ public class AuthControllerTest {
         ResponseEntity<AuthResponseDto> response = authController.login(loginDto);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        assertEquals(null, response.getBody().getToken());
+        assertNull(Objects.requireNonNull(response.getBody()).getToken());
     }
 
     @Test
-    public void testRegisterUser_Success() {
+    void testRegisterUser_Success() {
         RegisterDto registerDto = new RegisterDto();
         registerDto.setUsername("testuser");
         registerDto.setPassword("testpassword");
@@ -75,7 +78,7 @@ public class AuthControllerTest {
     }
 
     @Test
-    public void testRegisterUser_Failure() {
+    void testRegisterUser_Failure() {
         RegisterDto registerDto = new RegisterDto();
         registerDto.setUsername("testuser");
         registerDto.setPassword("testpassword");
