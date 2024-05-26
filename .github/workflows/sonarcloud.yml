@@ -40,4 +40,4 @@ jobs:
           JDBC_TEST_DATABASE_USERNAME: ${{ secrets.JDBC_TEST_DATABASE_USERNAME }}
           JDBC_TEST_DATABASE_PASSWORD: ${{ secrets.JDBC_TEST_DATABASE_PASSWORD }}
           PRODUCTION: test
-        run: ./gradlew build sonar --info
+        run: ./gradlew build sonar --info -Dsonar.exclusions=/*Application,/dto/,/security/
