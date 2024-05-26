@@ -1,16 +1,16 @@
 package id.ac.ui.cs.advprog.auth.model;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
-import java.util.Date;
-
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
+
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 @Data
 @Entity

@@ -40,7 +40,7 @@ public class AuthController {
             userService.create(signUpRequest);
             return ResponseEntity.ok("User registered successfully!");
         } catch (Exception ex) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to register user");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
         }
     }
 }

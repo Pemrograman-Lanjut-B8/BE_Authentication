@@ -86,6 +86,5 @@ public class AuthControllerTest {
         ResponseEntity<String> response = authController.registerUser(registerDto);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        assertEquals("Failed to register user", response.getBody());
     }
 }

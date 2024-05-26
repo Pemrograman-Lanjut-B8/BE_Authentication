@@ -1,12 +1,18 @@
 package id.ac.ui.cs.advprog.auth.dto;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.util.Date;
 import java.util.Set;
 
-import jakarta.validation.constraints.*;
-import lombok.Data;
-
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class RegisterDto {
     @NotBlank
     @Size(min = 3, max = 20)

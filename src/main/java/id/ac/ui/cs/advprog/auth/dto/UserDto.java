@@ -2,9 +2,10 @@ package id.ac.ui.cs.advprog.auth.dto;
 
 import id.ac.ui.cs.advprog.auth.model.ERole;
 import lombok.Data;
+
+import java.util.Date;
 import java.util.Set;
 import java.util.UUID;
-import java.util.Date;
 
 @Data
 public class UserDto {

@@ -20,7 +20,6 @@ import org.springframework.stereotype.Service;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Service
@@ -112,7 +111,7 @@ public class UserServiceImpl implements UserService {
         UserEntity existingUser = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
 
-        if (data.getNewPassword() != null && !data.getNewPassword().isEmpty()) {
+        if (!data.getNewPassword().isEmpty()) {
             if (data.getOldPassword() == null || data.getOldPassword().isEmpty())
                 throw new IllegalArgumentException("Old password must not be blank if new password is provided");
             if (!passwordEncoder.matches(data.getOldPassword(), existingUser.getPassword()))

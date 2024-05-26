@@ -4,7 +4,6 @@ import id.ac.ui.cs.advprog.auth.dto.*;
 import id.ac.ui.cs.advprog.auth.model.UserEntity;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 public interface UserService {
     public UserEntity create(RegisterDto user);
