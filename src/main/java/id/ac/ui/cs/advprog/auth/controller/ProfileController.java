@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/profile")
 public class ProfileController {
@@ -24,7 +25,6 @@ public class ProfileController {
         this.userService = userService;
     }
 
-    @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/")
     public ResponseEntity<UserDto> getUserProfile(@RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
         // Remove the "Bearer " prefix
@@ -42,7 +42,6 @@ public class ProfileController {
         }
     }
 
-    @CrossOrigin(origins = "http://localhost:3000")
     @PutMapping("/edit")
     public ResponseEntity<Object> editProfile(@RequestBody ProfileEditDto profileDto, @RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
         // Remove the "Bearer " prefix
