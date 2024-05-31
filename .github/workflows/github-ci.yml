@@ -110,5 +110,7 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no -i ssh-key.pem ${{ secrets.GCP_USERNAME }}@${{ secrets.GCP_STATIC_IP }} "
             sudo docker container rm -f ${{ secrets.CONTAINER_NAME }} || true &&
-            sudo docker image rm -f ${{ secrets.REGISTRY_USER }}/${{ secrets.IMAGE_NAME }}:${{ secrets.IMAGE_TAG }} || true &&
-            sudo docker run --name ${{ secrets.CONTAINER_NAME }} -d -p 80:8080 ${{ secrets.REGISTRY_USER }}/${{ secrets.IMAGE_NAME }}:${{ secrets.IMAGE_TAG }}"
+            sudo docker run -d --name ${{ secrets.CONTAINER_NAME }} -p 80:8080 ${{ secrets.REGISTRY_USER }}/${{ secrets.IMAGE_NAME }}:${{ secrets.IMAGE_TAG }} || (
+              docker run -d --name ${{ secrets.CONTAINER_NAME }} -p 80:8080 backup_image:latest &&
+              exit 1
+            )"
